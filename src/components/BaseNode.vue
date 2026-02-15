@@ -3,8 +3,8 @@
     class="px-4 py-2 shadow-md rounded-md border-2 min-w-[150px] transition-all duration-300" 
     :class="[
       isActive 
-        ? 'border-blue-500 bg-blue-50 shadow-[0_0_15px_rgba(59,130,246,0.5)] scale-105 z-50' 
-        : 'border-slate-200 bg-white text-slate-700'
+        ? 'border-blue-500 bg-gray-300 shadow-[0_0_15px_rgba(59,130,246,0.5)] scale-105 z-50' 
+        : 'border-slate-200 bg-gray-200 text-slate-700'
     ]"
   >
     <Handle type="target" :position="Position.Left" class="w-2 h-2 !bg-slate-400" />

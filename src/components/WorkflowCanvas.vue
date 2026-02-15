@@ -190,8 +190,8 @@ function onEdgeUpdate({ edge, connection }: any) {
 </script>
 
 <template>
-  <div class="h-full w-full relative bg-slate-50" @drop="onDrop" @dragover.prevent>
-    <VueFlow
+<div class="h-full w-full relative bg-gray-700" @drop="onDrop" @dragover.prevent>    
+<VueFlow
       :nodes="nodes"
       :edges="edges"
       :node-types="nodeTypes"
