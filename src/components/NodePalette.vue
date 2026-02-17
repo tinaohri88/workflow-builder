@@ -19,7 +19,7 @@
     </div>
 
     <div class="pt-4 border-t italic text-[10px] text-gray-400">
-      Drag nodes onto the canvas or click to add at center.
+      Drag nodes onto the canvas.
     </div>
   </aside>
 </template>

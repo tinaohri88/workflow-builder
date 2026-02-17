@@ -349,10 +349,7 @@ recordHistory({ nodes: store.present.nodes, edges: [...otherEdges, updatedEdge] 
 
 
     <div class="absolute bottom-6 left-6 z-50 flex items-center gap-4 bg-white p-2 rounded-lg shadow-lg border border-slate-200">
-      <div class="flex items-center gap-2 px-2 border-r pr-4">
-         <div :class="['h-2 w-2 rounded-full', store.isDirty ? 'bg-amber-400 animate-pulse' : 'bg-emerald-500']"></div>
-         <span class="text-[10px] font-bold text-slate-500 uppercase">{{ store.isDirty ? 'Unsaved' : 'Saved' }}</span>
-      </div>
+      
     
       <div class="flex gap-2">
         <button @click="store.runSimulation" :disabled="store.isRunning" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded font-bold disabled:opacity-50 transition-colors">

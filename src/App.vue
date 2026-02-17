@@ -36,7 +36,6 @@
       />
     </div>
 
-    <RunPreview />
   </div>
 </template>
 
@@ -45,7 +44,6 @@ import { ref } from 'vue'
 import NodePalette from './components/NodePalette.vue'
 import WorkflowCanvas from './components/WorkflowCanvas.vue'
 import ConfigPanel from './components/ConfigPanel.vue'
-import RunPreview from './components/RunPreview.vue'
 import HistoryPanel from './components/HistoryPanel.vue'
 
 // Reactivity State (Equivalent to const [isOpen, setIsOpen] = useState(true))
