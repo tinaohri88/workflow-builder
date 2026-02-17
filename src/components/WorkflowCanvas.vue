@@ -141,18 +141,39 @@ async function recordHistory(newState?: any, label: string = 'Manual Change') {
 function onDrop(event: DragEvent) {
   const type = event.dataTransfer?.getData('application/vueflow')
   if (!type) return
-  const position = project({ x: event.clientX, y: event.clientY })
+  
+  event.preventDefault()
+  
+  // Get the bounding rectangle of the VueFlow pane
+  const flowPane = (event.currentTarget as HTMLElement).querySelector('.vue-flow') as HTMLElement
+  if (!flowPane) return
+  
+  const bounds = flowPane.getBoundingClientRect()
+  
+  // Calculate position relative to the flow pane, accounting for zoom and pan
+  const projectedPos = project({ 
+    x: event.clientX - bounds.left, 
+    y: event.clientY - bounds.top 
+  })
+  
+  // Center the node on the cursor position
+  // Node width is 150px, height is approximately 50px
+  const position = {
+    x: projectedPos.x - 75,  // Half of node width
+    y: projectedPos.y - 25,  // Half of approximate node height
+  }
+  
   const newNode = {
     id: crypto.randomUUID(),
     type,
     position,
     data: { label: `${type.toUpperCase()}` },
+    // Ensure consistent dimensions matching BaseNode/ConditionNode
+    style: {
+      width: 150,
+    },
   }
   recordHistory({ ...store.present, nodes: [...store.present.nodes, newNode] }, `Add ${type} Node`)
-  
-  // Auto-select and open panel for the newly dropped node
-  store.selectedNodeId = newNode.id
-  emit('node-selected')
 }
 
 onConnect((params) => {
