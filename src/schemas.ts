@@ -21,5 +21,5 @@ export const schemas: Record<string, any> = {
     variable: z.string().min(1, "Variable name required"),
     operator: z.enum(['==', '!=', '>', '<']),
     value: z.string().min(1, "Value required"),
-  })
+  }),
 }
