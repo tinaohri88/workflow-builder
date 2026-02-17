@@ -18,9 +18,11 @@ import ConditionNode from './ConditionNode.vue'
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 
+// --- EMITS ---
+const emit = defineEmits(['node-selected'])
+
 const store = useWorkflowStore()
 
-// Added viewport helpers from useVueFlow
 const { project, onConnect, toObject, setViewport, onViewportChange } = useVueFlow()
 
 const nodeTypes = {
@@ -38,7 +40,6 @@ const edges = computed(() => store.present.edges)
 
 // --- 1. VIEWPORT RESTORATION & SYNC ---
 onMounted(() => {
-  // Restore viewport if it exists in store
   if (store.viewport) {
     setViewport(store.viewport)
   }
@@ -49,7 +50,6 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
 })
 
-// Sync viewport changes to store (debounced to prevent storage lag)
 const debouncedViewportSync = useDebounceFn((vp) => {
   store.saveViewport(vp)
 }, 500)
@@ -83,9 +83,9 @@ const debouncedSave = useDebounceFn(() => {
 
 watch(() => store.present, () => debouncedSave(), { deep: true })
 
-// --- 4. ACYCLIC & TYPED VALIDATION ---
+// --- 4. VALIDATION ---
 const isValidConnection = (connection: any) => {
-  const { source, target, sourceHandle, targetHandle } = connection
+  const { source, target } = connection
   if (source === target) return false
   
   const checkCycle = (src: string, dst: string, currentEdges: any[]): boolean => {
@@ -98,13 +98,6 @@ const isValidConnection = (connection: any) => {
     store.addLog('system', 'error', 'Infinite loop detected.')
     return false
   }
-
-  const sourceType = sourceHandle?.split('-')[0]
-  const targetType = targetHandle?.split('-')[0]
-  if (sourceType && targetType && sourceType !== targetType) {
-    store.addLog('system', 'error', `Type mismatch: ${sourceType} vs ${targetType}`)
-    return false
-  }
   return true
 }
 
@@ -113,10 +106,11 @@ const isValidConnection = (connection: any) => {
 function onNodesChange(changes: any) {
   store.present.nodes = applyNodeChanges(changes, store.present.nodes)
 
-  // Selection fix: Ensure sidebar opens when node is clicked or selected
+  // Trigger emit when a node is selected via change detection
   const selectChange = changes.find((c: any) => c.type === 'select')
   if (selectChange && selectChange.selected) {
     store.selectedNodeId = selectChange.id
+    emit('node-selected') // Tells parent to open ConfigPanel
   }
 }
 
@@ -126,6 +120,7 @@ function onEdgesChange(changes: any) {
 
 const onNodeClick = ({ node }: any) => { 
   store.selectedNodeId = node.id 
+  emit('node-selected') // Tells parent to open ConfigPanel
 }
 
 const onPaneClick = () => { 
@@ -154,6 +149,10 @@ function onDrop(event: DragEvent) {
     data: { label: `${type.toUpperCase()}` },
   }
   recordHistory({ ...store.present, nodes: [...store.present.nodes, newNode] }, `Add ${type} Node`)
+  
+  // Auto-select and open panel for the newly dropped node
+  store.selectedNodeId = newNode.id
+  emit('node-selected')
 }
 
 onConnect((params) => {
@@ -190,16 +189,14 @@ function onEdgeUpdate({ edge, connection }: any) {
 </script>
 
 <template>
-<div class="h-full w-full relative bg-gray-700" @drop="onDrop" @dragover.prevent>    
-<VueFlow
+  <div class="h-full w-full relative bg-gray-700" @drop="onDrop" @dragover.prevent>    
+    <VueFlow
       :nodes="nodes"
       :edges="edges"
       :node-types="nodeTypes"
       :is-valid-connection="isValidConnection"
-      
       :only-render-visible-elements="true"
       :select-nodes-on-drag="false"
-      
       :fit-view-on-init="!store.viewport"
       
       @nodes-change="onNodesChange"

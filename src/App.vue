@@ -3,8 +3,7 @@
     <NodePalette />
 
     <div class="flex-1 relative">
-      <WorkflowCanvas />
-      
+    <WorkflowCanvas @node-selected="isConfigOpen = true" />      
       <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
         <button 
           v-if="!isHistoryOpen"
