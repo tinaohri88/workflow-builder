@@ -1,10 +1,14 @@
 import { defineStore } from 'pinia'
 
 
+
+
 export interface WorkflowState {
  nodes: any[]
  edges: any[]
 }
+
+
 
 
 export interface HistoryStep {
@@ -12,6 +16,8 @@ export interface HistoryStep {
  label: string
  timestamp: string
 }
+
+
 
 
 export interface LogEntry {
@@ -22,10 +28,14 @@ export interface LogEntry {
 }
 
 
+
+
 const empty: WorkflowState = {
  nodes: [],
  edges: [],
 }
+
+
 
 
 export const useWorkflowStore = defineStore('workflow', {
@@ -44,6 +54,8 @@ export const useWorkflowStore = defineStore('workflow', {
    // Viewport State
    viewport: JSON.parse(localStorage.getItem('viewport') || 'null') as { x: number; y: number; zoom: number } | null,
  }),
+
+
 
 
  actions: {
@@ -66,6 +78,8 @@ export const useWorkflowStore = defineStore('workflow', {
    },
 
 
+
+
    undo() {
      if (!this.past.length) return
      const previous = this.past.pop()!
@@ -78,10 +92,14 @@ export const useWorkflowStore = defineStore('workflow', {
      })
 
 
+
+
      this.present = previous.state
      localStorage.setItem('workflow', JSON.stringify(this.present))
      this.addLog('system', 'success', `Undo: ${previous.label}`)
    },
+
+
 
 
    redo() {
@@ -95,10 +113,14 @@ export const useWorkflowStore = defineStore('workflow', {
      })
 
 
+
+
      this.present = next.state
      localStorage.setItem('workflow', JSON.stringify(this.present))
      this.addLog('system', 'success', `Redo: ${next.label}`)
    },
+
+
 
 
    /**
@@ -109,6 +131,8 @@ export const useWorkflowStore = defineStore('workflow', {
      if (!target) return
 
 
+
+
      // Truncate history to this point
      this.present = JSON.parse(JSON.stringify(target.state))
      this.past = this.past.slice(0, index)
@@ -116,6 +140,8 @@ export const useWorkflowStore = defineStore('workflow', {
      localStorage.setItem('workflow', JSON.stringify(this.present))
      this.addLog('system', 'success', `Jumped to: ${target.label}`)
    },
+
+
 
 
    // --- DATA LOADING ---
@@ -128,10 +154,14 @@ export const useWorkflowStore = defineStore('workflow', {
    },
 
 
+
+
    // --- NODE & EDGE MANIPULATION ---
    duplicateNode(nodeId: string) {
      const nodeToCopy = this.present.nodes.find((n) => n.id === nodeId)
      if (!nodeToCopy) return
+
+
 
 
      const newNode = {
@@ -145,11 +175,15 @@ export const useWorkflowStore = defineStore('workflow', {
      }
 
 
+
+
      this.commit({
        ...this.present,
        nodes: [...this.present.nodes, newNode],
      }, `Duplicate ${nodeToCopy.type}`)
    },
+
+
 
 
    deleteNode(nodeId: string) {
@@ -160,16 +194,22 @@ export const useWorkflowStore = defineStore('workflow', {
      )
 
 
+
+
      this.commit({
        nodes: filteredNodes,
        edges: filteredEdges,
      }, `Delete ${nodeToDelete?.type || 'Node'}`)
 
 
+
+
      if (this.selectedNodeId === nodeId) {
        this.selectedNodeId = null
      }
    },
+
+
 
 
    deleteEdge(edgeId: string) {
@@ -181,16 +221,22 @@ export const useWorkflowStore = defineStore('workflow', {
    },
 
 
+
+
    clearWorkflow() {
      this.commit({ nodes: [], edges: [] }, 'Clear Canvas')
      this.selectedNodeId = null
    },
 
 
+
+
    saveViewport(viewport: { x: number; y: number; zoom: number }) {
      this.viewport = viewport
      localStorage.setItem('viewport', JSON.stringify(viewport))
    },
+
+
 
 
    // --- SIMULATION & LOGGING ---
@@ -237,7 +283,8 @@ export const useWorkflowStore = defineStore('workflow', {
 
      while (currentNode && this.isRunning) {
        this.activeNodeId = currentNode.id
-       this.addLog(currentNode.id, 'success', `Executing ${currentNode.type}...`)
+       const nodeLabel = currentNode.data?.label || currentNode.type
+       this.addLog(currentNode.id, 'success', `Executing ${nodeLabel}...`)
 
 
        await new Promise(resolve => setTimeout(resolve, 1000))
@@ -286,7 +333,10 @@ export const useWorkflowStore = defineStore('workflow', {
 
      this.activeNodeId = null
      this.isRunning = false
+     this.logs = []
    }
  },
 })
+
+
 
