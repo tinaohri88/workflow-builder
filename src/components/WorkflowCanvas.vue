@@ -140,13 +140,8 @@ async function recordHistory(newState?: any, label: string = 'Manual Change') {
 
 function onDrop(event: DragEvent) {
   const type = event.dataTransfer?.getData('application/vueflow')
-  
   if (!type) return
-  const position = project({ 
-    x: event.clientX - bounds.left, 
-    y: event.clientY - bounds.top 
-  })
-  
+  const position = project({ x: event.clientX, y: event.clientY })
   const newNode = {
     id: crypto.randomUUID(),
     type,
