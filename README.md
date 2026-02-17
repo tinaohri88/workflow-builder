@@ -7,8 +7,6 @@ A visual workflow automation builder that allows users to create, configure, and
 ![Workflow Builder](https://img.shields.io/badge/Vue-3.4-4FC08D?logo=vue.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178C6?logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-5.0-646CFF?logo=vite&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green)
-
 
 ## ✨ Features
 
