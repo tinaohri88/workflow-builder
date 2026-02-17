@@ -106,12 +106,21 @@ const handleKeyDown = (e: KeyboardEvent) => {
  } else if (isCmdOrCtrl && key === "y") {
    e.preventDefault();
    store.redo();
- } else if (
-   (key === "delete" || key === "backspace") &&
-   store.selectedNodeId
- ) {
+ } else if (key === "delete" || key === "backspace") {
    e.preventDefault();
-   store.deleteNode(store.selectedNodeId);
+   // Check if an edge is selected
+   if (selectedEdgeId.value) {
+     // Delete only the selected edge
+     const updatedEdges = store.present.edges.filter((edge) => edge.id !== selectedEdgeId.value);
+     recordHistory(
+       { nodes: store.present.nodes, edges: updatedEdges },
+       "Delete Edge",
+     );
+     selectedEdgeId.value = null;
+   } else if (store.selectedNodeId) {
+     // Delete the selected node
+     store.deleteNode(store.selectedNodeId);
+   }
  }
 };
 
@@ -239,6 +248,14 @@ function onNodesChange(changes: any) {
 
 
 function onEdgesChange(changes: any) {
+ // Check if this is an edge removal - if so, use the proper action to track in history
+ const removeChange = changes.find((c: any) => c.type === "remove");
+ if (removeChange) {
+   store.deleteEdge(removeChange.id);
+   return;
+ }
+ 
+ // For other changes (select, etc.), apply them directly
  store.present.edges = applyEdgeChanges(changes, store.present.edges);
 }
 
@@ -266,10 +283,16 @@ async function recordHistory(newState?: any, label: string = "Manual Change") {
 }
 
 
+function onDragOver(event: DragEvent) {
+ event.preventDefault();
+ event.dataTransfer!.dropEffect = 'move';
+}
+
 function onDrop(event: DragEvent) {
+ event.preventDefault();
  const type = event.dataTransfer?.getData("application/vueflow");
  if (!type) return;
- event.preventDefault();
+ 
  // Get the bounding rectangle of the VueFlow pane
  const flowPane = (event.currentTarget as HTMLElement).querySelector(
    ".vue-flow",
@@ -374,7 +397,7 @@ function onEdgeUpdate({ edge, connection }: any) {
  <div
    class="h-full w-full relative bg-gray-700"
    @drop="onDrop"
-   @dragover.prevent
+   @dragover="onDragOver"
  >
    <VueFlow
      :nodes="nodes"
@@ -384,7 +407,6 @@ function onEdgeUpdate({ edge, connection }: any) {
      :only-render-visible-elements="true"
      :select-nodes-on-drag="false"
      :fit-view-on-init="true"
-     :apply-default="false"
      @nodes-change="onNodesChange"
      @edges-change="onEdgesChange"
      @edge-update="onEdgeUpdate"

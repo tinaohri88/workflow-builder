@@ -26,25 +26,26 @@
 
 <script setup lang="ts">
 import { useWorkflowStore } from '../store/workflow'
+import { NODE_TYPES } from '../schemas'
 
 const store = useWorkflowStore()
 
-// Requirement: Specific Node Types 
-const nodeGroups = {
-  trigger: [
-    { type: 'manual', label: 'Manual Trigger', color: 'bg-green-500' },
-    { type: 'webhook', label: 'Webhook', color: 'bg-green-600' },
-  ],
-  action: [
-    { type: 'http', label: 'HTTP Request', color: 'bg-blue-500' },
-    { type: 'email', label: 'Email', color: 'bg-blue-400' },
-    { type: 'sms', label: 'SMS', color: 'bg-indigo-400' },
-  ],
-  logic: [
-    { type: 'condition', label: 'Condition', color: 'bg-orange-500' },
-    { type: 'transform', label: 'Transform', color: 'bg-orange-600' },
-  ],
-}
+/**
+ * Group node types by category - derived from NODE_TYPES registry
+ * This creates groups dynamically, making it scalable for new node types
+ */
+const nodeGroups = NODE_TYPES.reduce((groups, nodeType) => {
+  if (!groups[nodeType.category]) {
+    groups[nodeType.category] = []
+  }
+  groups[nodeType.category].push({
+    type: nodeType.type,
+    label: nodeType.label,
+    color: nodeType.color,
+    description: nodeType.description,
+  })
+  return groups
+}, {} as Record<string, Array<{ type: string; label: string; color: string; description?: string }>>)
 
 /**
  * Requirement: Drag/drop from palette 
@@ -59,7 +60,8 @@ const onDragStart = (event: DragEvent, nodeType: string) => {
     dragImage.className = 'px-4 py-2 shadow-md rounded-md border-2 bg-gray-200 border-slate-200 text-slate-700'
     dragImage.style.width = '150px'
     dragImage.style.position = 'absolute'
-    dragImage.style.top = '-1000px'
+    dragImage.style.left = '-9999px'
+    dragImage.style.top = '-9999px'
     dragImage.innerHTML = `
       <div class="text-[9px] font-black text-blue-500 uppercase tracking-tight">${nodeType}</div>
       <div class="text-sm font-semibold">${nodeType.toUpperCase()}</div>
@@ -67,8 +69,14 @@ const onDragStart = (event: DragEvent, nodeType: string) => {
     document.body.appendChild(dragImage)
     event.dataTransfer.setDragImage(dragImage, 75, 25)
     
-    // Clean up the drag image after a short delay
-    setTimeout(() => document.body.removeChild(dragImage), 0)
+    // Clean up the drag image after drag is complete
+    setTimeout(() => {
+      try {
+        document.body.removeChild(dragImage)
+      } catch (e) {
+        // Already removed
+      }
+    }, 1000)
   }
 }
 </script>
